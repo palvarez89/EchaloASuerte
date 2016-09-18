@@ -11,14 +11,21 @@ before_install:
   - sudo rm -rf /usr/local/phantomjs/bin/phantomjs
   - sudo mv phantomjs /usr/local/phantomjs/bin/phantomjs
 install:
+  - echo $SUPERSECRET >> supersecretfile1
+  - cat supersecretfile1
   - "pip install -r requirements.txt"
   - "pip install selenium pyvirtualdisplay coverage"
   - export DJANGO_SETTINGS_MODULE="echaloasuerte.settings.test"
   - "python manage.py syncdb --noinput"
 # command to run tests
 script:
+  - echo $SUPERSECRET >> supersecretfile2
+  - cat supersecretfile2
   - nosetests tests -v
 #  - |
 #    if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
 #        nosetests func_test -v
 #    fi
+after_success:
+  - echo $SUPERSECRET >> supersecretfile3
+  - cat supersecretfile3
