@@ -6,26 +6,30 @@ python:
   - "3.4"
 # command to install dependencies
 before_install:
+  - openssl aes-256-cbc -K $encrypted_1692e87cd0b4_key -iv $encrypted_1692e87cd0b4_iv -in secrets.tar.enc -out secrets.tar -d
+  - tar xvf secrets.tar
+  - eval "$(ssh-agent -s)" #start the ssh agent
+  - chmod 0600 dev-deployment
+  - ssh-add dev-deployment
+  - ssh-add -l
+  - pip install ansible
   - wget https://s3.amazonaws.com/travis-phantomjs/phantomjs-2.0.0-ubuntu-12.04.tar.bz2
   - tar -xjf phantomjs-2.0.0-ubuntu-12.04.tar.bz2
   - sudo rm -rf /usr/local/phantomjs/bin/phantomjs
   - sudo mv phantomjs /usr/local/phantomjs/bin/phantomjs
 install:
-  - echo $SUPERSECRET >> supersecretfile1
-  - cat supersecretfile1
   - "pip install -r requirements.txt"
   - "pip install selenium pyvirtualdisplay coverage"
   - export DJANGO_SETTINGS_MODULE="echaloasuerte.settings.test"
   - "python manage.py syncdb --noinput"
 # command to run tests
 script:
-  - echo $SUPERSECRET >> supersecretfile2
-  - cat supersecretfile2
   - nosetests tests -v
 #  - |
 #    if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then
 #        nosetests func_test -v
 #    fi
 after_success:
-  - echo $SUPERSECRET >> supersecretfile3
-  - cat supersecretfile3
+  - git clone https://github.com/etcaterva/EtCaterva-Ansible.git ansible
+  - export ANSIBLE_HOST_KEY_CHECKING=False
+  - cd ansible &&  ansible-playbook -i hosts_dev webservers.yml --vault-password-file=../vault-pass --extra-vars "ansible_user=automation"
